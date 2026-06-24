@@ -167,7 +167,7 @@ class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
   late final List<Widget> _pages = [
-    HomeScreen(profile: widget.profile),
+    HomeScreen(profile: widget.profile, onTabChange: (i) => setState(() => _currentIndex = i)),
     const FlightsScreen(),
     const HotelsScreen(),
     DestinationsScreen(profile: widget.profile),
@@ -197,7 +197,8 @@ class _MainShellState extends State<MainShell> {
 
 class HomeScreen extends StatelessWidget {
   final TravelerProfile profile;
-  const HomeScreen({super.key, required this.profile});
+  final ValueChanged<int>? onTabChange;
+  const HomeScreen({super.key, required this.profile, this.onTabChange});
 
   String get _greeting {
     switch (profile) {
@@ -249,7 +250,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             _HeroBanner(greeting: _greeting, subtitle: _subtitle),
             const SizedBox(height: 20),
-            _QuickActions(),
+            _QuickActions(onTabChange: onTabChange),
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -324,6 +325,9 @@ class _HeroBanner extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
+  final ValueChanged<int>? onTabChange;
+  const _QuickActions({this.onTabChange});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -334,21 +338,21 @@ class _QuickActions extends StatelessWidget {
             icon: Icons.flight,
             label: 'Vuelos',
             color: Colors.indigo,
-            onTap: () {},
+            onTap: () => onTabChange?.call(1),
           ),
           const SizedBox(width: 12),
           _ActionButton(
             icon: Icons.hotel,
             label: 'Hoteles',
             color: Colors.deepOrange,
-            onTap: () {},
+            onTap: () => onTabChange?.call(2),
           ),
           const SizedBox(width: 12),
           _ActionButton(
             icon: Icons.explore,
             label: 'Destinos',
             color: Colors.teal,
-            onTap: () {},
+            onTap: () => onTabChange?.call(3),
           ),
         ],
       ),

@@ -3,7 +3,8 @@ import '../models/flight.dart';
 import '../data/travel_mock.dart';
 
 class FlightsScreen extends StatefulWidget {
-  const FlightsScreen({super.key});
+  final String? initialDestination;
+  const FlightsScreen({super.key, this.initialDestination});
 
   @override
   State<FlightsScreen> createState() => _FlightsScreenState();
@@ -11,7 +12,9 @@ class FlightsScreen extends StatefulWidget {
 
 class _FlightsScreenState extends State<FlightsScreen> {
   final _originCtrl = TextEditingController(text: 'Buenos Aires (EZE)');
-  final _destCtrl = TextEditingController(text: 'Madrid (MAD)');
+  late final _destCtrl = TextEditingController(
+    text: widget.initialDestination ?? 'Madrid (MAD)',
+  );
   DateTime _departureDate = DateTime.now().add(const Duration(days: 14));
   int _passengers = 1;
   bool _searched = false;

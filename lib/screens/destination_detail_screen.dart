@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/destination.dart';
+import 'flights_screen.dart';
+import 'hotels_screen.dart';
 
 class DestinationDetailScreen extends StatelessWidget {
   final Destination destination;
@@ -87,16 +89,57 @@ class DestinationDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   _PriceCard(destination: destination),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Planificar el viaje',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _TravelActionButton(
+                          icon: Icons.flight,
+                          label: 'Buscar vuelos',
+                          color: Colors.indigo,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => FlightsScreen(
+                                initialDestination: destination.name,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _TravelActionButton(
+                          icon: Icons.hotel,
+                          label: 'Ver hoteles',
+                          color: Colors.deepOrange,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HotelsScreen(
+                                initialCity: destination.name,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     height: 52,
-                    child: ElevatedButton.icon(
+                    child: OutlinedButton.icon(
                       icon: const Icon(Icons.bookmark_add_outlined),
                       label: const Text('Guardar destino', style: TextStyle(fontSize: 16)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        foregroundColor: Colors.white,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.teal,
+                        side: const BorderSide(color: Colors.teal, width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -119,6 +162,30 @@ class DestinationDetailScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _TravelActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _TravelActionButton(
+      {required this.icon, required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      icon: Icon(icon, size: 18),
+      label: Text(label, style: const TextStyle(fontSize: 14)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      onPressed: onTap,
     );
   }
 }

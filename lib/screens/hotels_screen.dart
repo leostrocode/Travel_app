@@ -3,14 +3,15 @@ import '../models/flight.dart';
 import '../data/travel_mock.dart';
 
 class HotelsScreen extends StatefulWidget {
-  const HotelsScreen({super.key});
+  final String? initialCity;
+  const HotelsScreen({super.key, this.initialCity});
 
   @override
   State<HotelsScreen> createState() => _HotelsScreenState();
 }
 
 class _HotelsScreenState extends State<HotelsScreen> {
-  final _destCtrl = TextEditingController(text: 'Madrid');
+  late final _destCtrl = TextEditingController(text: widget.initialCity ?? 'Madrid');
   DateTime _checkIn = DateTime.now().add(const Duration(days: 14));
   DateTime _checkOut = DateTime.now().add(const Duration(days: 18));
   int _guests = 2;
