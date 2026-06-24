@@ -3,6 +3,8 @@ import 'models/destination.dart';
 import 'data/mock_data.dart';
 import 'screens/destinations_screen.dart';
 import 'screens/destination_detail_screen.dart';
+import 'screens/flights_screen.dart';
+import 'screens/hotels_screen.dart';
 import 'widgets/destination_card.dart';
 
 void main() => runApp(const TravelApp());
@@ -86,10 +88,10 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _navigate(BuildContext context, String profile) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => HomeScreen(profile: profileFromString(profile)),
+        builder: (_) => MainShell(profile: profileFromString(profile)),
       ),
     );
   }
@@ -136,7 +138,8 @@ class _ProfileCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(description, style: TextStyle(color: Colors.teal.shade100, fontSize: 13)),
+                  Text(description,
+                      style: TextStyle(color: Colors.teal.shade100, fontSize: 13)),
                 ],
               ),
             ),
@@ -149,7 +152,47 @@ class _ProfileCard extends StatelessWidget {
 }
 
 // ──────────────────────────────────────────────
-// Home screen (after profile selection)
+// Main shell with bottom nav
+// ──────────────────────────────────────────────
+
+class MainShell extends StatefulWidget {
+  final TravelerProfile profile;
+  const MainShell({super.key, required this.profile});
+
+  @override
+  State<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<MainShell> {
+  int _currentIndex = 0;
+
+  late final List<Widget> _pages = [
+    HomeScreen(profile: widget.profile),
+    const FlightsScreen(),
+    const HotelsScreen(),
+    DestinationsScreen(profile: widget.profile),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(index: _currentIndex, children: _pages),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (i) => setState(() => _currentIndex = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Inicio'),
+          NavigationDestination(icon: Icon(Icons.flight_outlined), selectedIcon: Icon(Icons.flight), label: 'Vuelos'),
+          NavigationDestination(icon: Icon(Icons.hotel_outlined), selectedIcon: Icon(Icons.hotel), label: 'Hoteles'),
+          NavigationDestination(icon: Icon(Icons.explore_outlined), selectedIcon: Icon(Icons.explore), label: 'Destinos'),
+        ],
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────
+// Home screen
 // ──────────────────────────────────────────────
 
 class HomeScreen extends StatelessWidget {
@@ -178,25 +221,35 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  List<Destination> get _featured {
-    return getDestinationsForProfile(profile).take(3).toList();
-  }
+  List<Destination> get _featured =>
+      getDestinationsForProfile(profile).take(3).toList();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Inicio'),
+        title: const Text('Travel App'),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _HeroBanner(greeting: _greeting, subtitle: _subtitle),
+            const SizedBox(height: 20),
+            _QuickActions(),
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -208,18 +261,13 @@ class HomeScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   TextButton(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DestinationsScreen(profile: profile),
-                      ),
-                    ),
+                    onPressed: () {},
                     child: const Text('Ver todos', style: TextStyle(color: Colors.teal)),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             ..._featured.map(
               (d) => Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -229,29 +277,6 @@ class HomeScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) => DestinationDetailScreen(destination: d),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.search),
-                  label: const Text('Buscar Destinos', style: TextStyle(fontSize: 16)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => DestinationsScreen(profile: profile),
                     ),
                   ),
                 ),
@@ -287,14 +312,83 @@ class _HeroBanner extends StatelessWidget {
           Text(
             greeting,
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+                color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
-          Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          Text(subtitle,
+              style: const TextStyle(color: Colors.white70, fontSize: 14)),
         ],
+      ),
+    );
+  }
+}
+
+class _QuickActions extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _ActionButton(
+            icon: Icons.flight,
+            label: 'Vuelos',
+            color: Colors.indigo,
+            onTap: () {},
+          ),
+          const SizedBox(width: 12),
+          _ActionButton(
+            icon: Icons.hotel,
+            label: 'Hoteles',
+            color: Colors.deepOrange,
+            onTap: () {},
+          ),
+          const SizedBox(width: 12),
+          _ActionButton(
+            icon: Icons.explore,
+            label: 'Destinos',
+            color: Colors.teal,
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _ActionButton(
+      {required this.icon,
+      required this.label,
+      required this.color,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 26),
+              const SizedBox(height: 6),
+              Text(label,
+                  style: TextStyle(
+                      color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
       ),
     );
   }
